@@ -155,6 +155,26 @@ function editImage(dataURL) {
   window.location.href = "edit.html?img=" + encodeURIComponent(dataURL);
 }
 
+function previewImage(imgElem) {
+  const wrapper = imgElem.closest(".uploaded-image");
+  const id = parseInt(wrapper.getAttribute("data-id"), 10);
+  const index = uploadedImages.findIndex(img => img.id === id);
+
+  if (index !== -1) {
+    const imageList = uploadedImages.map(img => ({
+      src: img.src,
+      name: wrapper.querySelector(".uploaded-image-name")?.innerText || "Untitled",
+      size: getImageSize(img.src)
+    }));
+    openPreview(index, imageList);
+  }
+}
+
+function getImageSize(base64String) {
+  let sizeInBytes = (base64String.length * (3/4)) - (base64String.endsWith("==") ? 2 : (base64String.endsWith("=") ? 1 : 0));
+  return `${(sizeInBytes / 1024).toFixed(2)} KB`;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   Sortable.create(document.getElementById("uploadedImagesContainer"), {
     animation: 150,
