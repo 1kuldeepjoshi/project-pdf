@@ -1,46 +1,66 @@
-let currentZoomLevel = 1;
+let currentIndex = 0;
+let images = [];
+let currentZoom = 1;
+let currentRotation = 0;
 
-document.addEventListener("DOMContentLoaded", () => {
-  const modalImg = document.getElementById("previewModalImage");
+function openPreview(index, imgList) {
+  images = imgList;
+  currentIndex = index;
+  currentZoom = 1;
+  currentRotation = 0;
 
-  document.getElementById("modalClose").addEventListener("click", () => {
-    document.getElementById("previewModal").style.display = "none";
-  });
+  const img = images[index];
+  const preview = document.getElementById("previewImage");
 
-  document.getElementById("modalZoomIn").addEventListener("click", () => {
-    if (currentZoomLevel < 3) {
-      currentZoomLevel += 0.2;
-      modalImg.style.transform = `scale(${currentZoomLevel})`;
-      document.getElementById("modalZoomOut").style.display = "block";
-    }
-  });
+  preview.src = img.src;
+  preview.style.transform = "scale(1) rotate(0deg)";
+  document.getElementById("imgName").textContent = img.name || "Untitled";
+  document.getElementById("imgSize").textContent = img.size || "";
 
-  document.getElementById("modalZoomOut").addEventListener("click", () => {
-    if (currentZoomLevel > 1) {
-      currentZoomLevel -= 0.2;
-      if (currentZoomLevel <= 1) {
-        currentZoomLevel = 1;
-        document.getElementById("modalZoomOut").style.display = "none";
-      }
-      modalImg.style.transform = `scale(${currentZoomLevel})`;
-    }
-  });
-
-  document.getElementById("modalEdit").addEventListener("click", () => {
-    window.location.href =
-      "edit.html?img=" + encodeURIComponent(modalImg.src);
-  });
-});
-
-/**
- * Open the preview modal with the given image
- * @param {HTMLImageElement} imgElem
- */
-function previewImage(imgElem) {
-  const modal = document.getElementById("previewModal");
-  const modalImg = document.getElementById("previewModalImage");
-  modalImg.src = imgElem.src;
-  modalImg.style.transform = "scale(1)";
-  currentZoomLevel = 1;
-  modal.style.display = "flex";
+  document.getElementById("previewModal").style.display = "flex";
 }
+
+function closePreview() {
+  document.getElementById("previewModal").style.display = "none";
+}
+
+function rotateImage(degrees) {
+  currentRotation += degrees;
+  document.getElementById("previewImage").style.transform =
+    `scale(${currentZoom}) rotate(${currentRotation}deg)`;
+}
+
+function zoomImage(factor) {
+  currentZoom *= factor;
+  document.getElementById("previewImage").style.transform =
+    `scale(${currentZoom}) rotate(${currentRotation}deg)`;
+}
+
+function showImage(index) {
+  if (index < 0 || index >= images.length) return;
+  currentIndex = index;
+  currentZoom = 1;
+  currentRotation = 0;
+  openPreview(index, images);
+}
+
+document.getElementById("modalPrev").onclick = () => showImage(currentIndex - 1);
+document.getElementById("modalNext").onclick = () => showImage(currentIndex + 1);
+
+function downloadImage() {
+  const img = images[currentIndex];
+  const link = document.createElement("a");
+  link.href = img.src;
+  link.download = img.name || "image.jpg";
+  link.click();
+}
+
+// Keyboard navigation
+document.addEventListener("keydown", (e) => {
+  const modal = document.getElementById("previewModal");
+  if (modal.style.display !== "flex") return;
+
+  if (e.key === "ArrowRight") showImage(currentIndex + 1);
+  else if (e.key === "ArrowLeft") showImage(currentIndex - 1);
+  else if (e.key === "Escape") closePreview();
+});
