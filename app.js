@@ -34,10 +34,13 @@ function handleFileUpload(event) {
       const imageWrapper = createImageWrapper(result.file.name, result.dataURL, imageNumber);
       uploadedImagesContainer.appendChild(imageWrapper);
       uploadedImages.push({
-        id: imageNumber,
-        src: result.dataURL,
-        element: imageWrapper,
-      });
+  id: imageNumber,
+  src: result.dataURL,
+  name: result.file.name,         // ✅ Add this
+  size: formatBytes(result.file.size), // ✅ Add this
+  element: imageWrapper,
+});
+
     });
     document.getElementById("convertBtn").style.display = "block";
   });
@@ -155,9 +158,18 @@ function editImage(dataURL) {
   window.location.href = "edit.html?img=" + encodeURIComponent(dataURL);
 }
 
+
 document.addEventListener("DOMContentLoaded", () => {
   Sortable.create(document.getElementById("uploadedImagesContainer"), {
     animation: 150,
     onEnd: updateImageOrder,
   });
 });
+function formatBytes(bytes, decimals = 2) {
+  if (bytes === 0) return "0 Bytes";
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ["Bytes", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
+}
